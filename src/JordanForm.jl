@@ -1,94 +1,86 @@
 module JordanForm
 
-using LinearAlgebra, BlockDiagonals, RowEchelon, LinearAlgebraX
+using LinearAlgebra: checksquare, I, rank
+using RowEchelon
 using Graphs
 using Symbolics
 
 const IntOrRational = Union{Integer, Rational}
 
+include("types.jl")
 include("toeplitz.jl")
 include("eigenvalues.jl")
 
-export JordanBlock, JordanCanonicalForm, JordanFactorization
 export jordan_form
 
-struct JordanBlock{T} <: AbstractMatrix{T}
-    λ::T
-    size::Integer
-end
-Base.size(J::JordanBlock) = (J.size, J.size)
-Base.size(J::JordanBlock, d::Integer) = (J.size, J.size)
-function Base.getindex(J::JordanBlock, i::Integer, j::Integer)
-    if i == j
-        return J.λ
-    elseif i == j + 1
-        return one(T)
-    else
-        return zero(T)
-    end
-end
-
-struct JordanCanonicalForm{T} <: AbstractMatrix{T}
-    jordan_blocks::Vector{JordanBlock{T}}
-end
-function Base.size(J::JordanCanonicalForm, d::Integer)
-    n = sum(b -> size(b, 1), J.jordan_blocks)
-    return n
-end
-function Base.size(J::JordanCanonicalForm)
-    n = size(J, 1)
-    return (n, n)
-end
-function Base.getindex(J::JordanCanonicalForm, i::Integer, j::Integer)
-    # FIXME: Compute correct indexing.
-    block = J.jordan_blocks[findfirst(b -> i <= size(b, 1), J.jordan_blocks)]
-    return block[i, j]
-end
-
-mutable struct JordanFactorization{T}
-    basis::AbstractMatrix{T}
-    form::JordanCanonicalForm{T}
-end
-
-Base.iterate(J::JordanFactorization) = (J.basis, Val(:form))
-Base.iterate(J::JordanFactorization, ::Val{:form}) = (J.form, Val(:done))
-Base.iterate(J::JordanFactorization, ::Val{:done}) = nothing
-
-jordan_form(M; kwargs...) = trytoint.(_jordan_form(M; kwargs...))
-function _jordan_form(M::AbstractMatrix{T}) where {T <: IntOrRational} 
-    LinearAlgebra.checksquare(M)
+function jordan_form(M::AbstractMatrix{T}) where {T <: IntOrRational} 
+    checksquare(M)
     
     eigs = radical_eigvals(M)
     eigs = algebraic_multiplicity(eigs)
-            
-    # f((eig, size)) = jordan_block(eig, size)
-    # blocks = map(f, block_structure)
-    # jordan_mat = BlockDiagonal(blocks)
 
-    
+    M = M // 1
+
     jordan_basis = []
-    jordan_blocks = []
+    jordan_blocks = JordanBlock[]
     
     for (λ, alg_mul) in eigs
-        λ_basis = []
+        E = M - λ * I
 
-        println(λ, " ", alg_mul)
-        display(nullspacex(M - λ * I))
+        # Exact nullspace computation
+        λvecs = rref_nullspace(E)
 
-        eigvecs = nullspacex(M - λ * I)
-        new_vecs = []
+        for v in eachcol(λvecs)
+            push!(jordan_basis, v)
+            s = 1
 
-        for v in eachcol(eigvecs)
+            for _ in 2:alg_mul
+                v = rref_linsolve(E, v)[:, 1]
 
-            vec = eig_mat(λ, i) * [:, 1]
-            push!(λ_basis, vec)
-            push!(jordan_basis, vec)
+                push!(jordan_basis, v)
+                s += 1
+
+                if iszero(E * v)
+                    break
+                end
+            end
+
+            push!(jordan_blocks, JordanBlock(λ, s))
         end
     end
     
-    basis_mat = hcat(jordan_basis...)
+    basis_mat = reduce(hcat, jordan_basis)
     
     return JordanFactorization(basis_mat, JordanCanonicalForm(jordan_blocks))
+end
+
+rref_nullspace(A::AbstractMatrix{T}) where {T} = rref_linsolve(A, zeros(T, size(A, 1)))
+function rref_linsolve(A::AbstractMatrix{T}, b::AbstractVector{T}) where {T}
+    n, m = size(A)
+    @assert n == m
+
+    aug = hcat(A, b)
+    aug, pivots = rref_with_pivots!(aug, 0)
+
+    if last(pivots) == m + 1
+        return nothing  # The system is inconsistent
+    end
+
+    frees = setdiff(collect(1:m), pivots)
+
+    result = zeros(T, n, length(frees))
+    for (k, j) in enumerate(frees)
+        v = @view(result[:, k])
+        v[j] = T(1)
+        for (i, l) in enumerate(pivots)
+            v[l] = aug[i, end]
+            if l < j
+                v[l] -= aug[i, j]
+            end
+        end
+    end
+
+    return result
 end
 
 end
