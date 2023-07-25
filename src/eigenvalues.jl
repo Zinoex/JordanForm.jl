@@ -168,6 +168,8 @@ function binomialroots(p)
     a, b = p[1], p[end]
     @assert isone(a)
 
+    throw(NotImplementedError("Binomial polynomial roots is not implemented yet."))
+
     d = l - 1
 
     base = -b
