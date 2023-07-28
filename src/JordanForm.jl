@@ -3,7 +3,7 @@ module JordanForm
 using LinearAlgebra: checksquare, I, rank
 # using RowEchelon
 using Graphs
-using Symbolics
+using Symbolics, SymbolicUtils
 
 const IntOrRational = Union{Integer, Rational}
 
