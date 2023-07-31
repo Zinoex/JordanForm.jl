@@ -1,4 +1,3 @@
-
 p = JordanForm.charpoly(A1)
 expected = [1, -14, 90]
 @test iszero(expected - p)
