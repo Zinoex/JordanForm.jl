@@ -7,6 +7,8 @@ using Symbolics
 
 const IntOrRational = Union{Integer, Rational}
 
+export radical_eigvals, algebraic_multiplicity
+
 include("types.jl")
 include("toeplitz.jl")
 include("eigenvalues.jl")
