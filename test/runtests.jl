@@ -1,9 +1,11 @@
-using JordanForm
+using JordanForm, SymbolicUtils
 using Test
 
-test_files = ["eigenvalues_test.jl"]
+@testset "JordanForm.jl" begin
+    include("matrix_data.jl")
 
-for f = test_files
-    @info "Test - $f"
-    include(f)
+    @testset include("charpoly.jl")
+    @testset include("eigenvalue.jl")
+    @testset include("generalized_eigenvector.jl")
+    @testset include("jordan_form.jl")
 end

@@ -15,7 +15,7 @@ function radical_eigvals(A::AbstractMatrix{T}) where {T <: IntOrRational}
         return eigs
     end
 
-    sort!(eigs, by=λ -> (real(λ), imag(λ)))
+    sort!(eigs, by=λ -> (real(unwrap(λ)), imag(unwrap(λ))))
 
     return eigs
 end
@@ -74,7 +74,19 @@ end
 Try to find symbolic roots of a characteristic polynomial with best effort. 
 By Abel-Ruffini theorem, there is no general solution for polynomials of degree 5 or higher.
 """
-function charpoly_roots(p::AbstractVector{T}) where {T <: IntOrRational}
+function charpoly_roots(p)
+    eigs = _charpoly_roots(p)
+    eigs = Symbolics.unwrap(eigs)
+    rs, is = Symbolics.unwrap.(real.(eigs)), Symbolics.unwrap.(imag.(eigs))
+    eigs = [
+        iszero(simplify(i)) ? r : r + i * 1im
+        for (r, i) in zip(rs, is)
+    ]
+    return eigs
+end
+tryiszero(x::Union{Float64, IntOrRational}) = iszero(x)
+
+function _charpoly_roots(p::AbstractVector{T}) where {T <: IntOrRational}
     @assert length(p) >= 2 && isone(p[1])
 
     # p is ordered from highest to lowest power, hence if the last n coefficients are zero,
@@ -141,11 +153,11 @@ function quadraticroots(p)
 
     d = b^2 - 4c
     if iszero(d)
-        r = -symbolic_div(b, 2)
+        r = -b // 2
         return [r, r]
     else
-        r1 = symbolic_div(-b + symbolic_sqrt(d), 2)
-        r2 = symbolic_div(-b - symbolic_sqrt(d), 2)
+        r1 = (-b + symbolic_sqrt(d)) // 2
+        r2 = (-b - symbolic_sqrt(d)) // 2
 
         return [r1, r2]
     end
@@ -212,16 +224,16 @@ function cubicroots(p)
     a, b, c, d = p
     @assert isone(a)
 
-    Q = symbolic_div(3c - b^2, 9)
-    R = symbolic_div(9b * c - 27d - 2b^3, 54)
+    Q = (3c - b^2) // 9
+    R = (9b * c - 27d - 2b^3) // 54
 
     D = Q^3 + R^2
     S = symbolic_cbrt(R + symbolic_sqrt(D))
     T = symbolic_cbrt(R - symbolic_sqrt(D))
 
     r1 = S + T - b // 3
-    r2 = -symbolic_div(S + T, 2) - symbolic_div(b, 3) + (S - T) * symbolic_sqrt(3) * symbolic_div(1im, 2)
-    r3 = -symbolic_div(S + T, 2) - symbolic_div(b, 3) - (S - T) * symbolic_sqrt(3) * symbolic_div(1im, 2)
+    r2 = -(S + T) // 2 - b // 3 + (S - T) * symbolic_sqrt(3) * 1im // 2
+    r3 = -(S + T) // 2 - b // 3 - (S - T) * symbolic_sqrt(3) * 1im // 2
 
     return [r1, r2, r3]
 end
@@ -254,24 +266,31 @@ function quarticroots(p)
         y + symbolic_sqrt(y^2 - 4e)
     ]
 
-    r1 = symbolic_div(-p[1] + symbolic_sqrt(p[1]^2 - 8q[1]), 4)
-    r2 = symbolic_div(-p[1] - symbolic_sqrt(p[1]^2 - 8q[1]), 4)
-    r3 = symbolic_div(-p[2] + symbolic_sqrt(p[2]^2 - 8q[2]), 4)
-    r4 = symbolic_div(-p[2] - symbolic_sqrt(p[2]^2 - 8q[2]), 4)
+    r1 = (-p[1] + symbolic_sqrt(p[1]^2 - 8q[1])) // 4
+    r2 = (-p[1] - symbolic_sqrt(p[1]^2 - 8q[1])) // 4
+    r3 = (-p[2] + symbolic_sqrt(p[2]^2 - 8q[2])) // 4
+    r4 = (-p[2] - symbolic_sqrt(p[2]^2 - 8q[2])) // 4
 
     return [r1, r2, r3, r4]
 end
 
 function symbolic_sqrt(r)
-    if base == 0
+    if r == 0
         return 0
     end
 
     if r < 0
-        return Symbolic.Pow(-r, 1//2) * 1im
+        return wrap(-r)^(1//2) * 1im
     else
-        return Symbolics.Pow(r, 1//2)
+        return wrap(r)
     end
 end
-symbolic_cbrt(r) = Symbolics.Pow(r, 1//3)
-symbolic_div(num, den) = Symbolics.div(num, den)
+symbolic_cbrt(r) = wrap(r)^1//3
+
+
+wrap(r) = Symbolics.wrap(Symbolics.Term(identity, [r]))
+function unwrap(r)
+    r = Symbolics.unwrap(r)
+    r = simplify(r)
+    return r
+end
