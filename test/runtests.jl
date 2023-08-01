@@ -1,11 +1,11 @@
 using JordanForm, SymbolicUtils
 using Test
 
-@testset "JordanForm.jl" begin
-    include("matrix_data.jl")
-
-    @testset include("charpoly.jl")
-    @testset include("eigenvalue.jl")
-    @testset include("generalized_eigenvector.jl")
-    @testset include("jordan_form.jl")
+test_files = ["charpoly.jl", "eigenvalue.jl", "generalized_eigenvector.jl", "jordan_form.jl"]
+include("matrix_data.jl")
+    
+for f = test_files
+    @testset "$f" begin
+        include(f)
+    end
 end

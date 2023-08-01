@@ -282,7 +282,7 @@ function symbolic_sqrt(r)
     if r < 0
         return wrap(-r)^(1//2) * 1im
     else
-        return wrap(r)
+        return wrap(r)^(1//2)
     end
 end
 symbolic_cbrt(r) = wrap(r)^1//3
