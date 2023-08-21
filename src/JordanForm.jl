@@ -39,8 +39,6 @@ function _jordan_form(M::AbstractMatrix{T}) where {T <: IntOrRational}
         append!(jordan_basis, basis)
         append!(jordan_blocks, blocks)
     end
-
-    # return nothing
     
     jordan_basis = reduce(hcat, jordan_basis)
     
