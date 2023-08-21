@@ -5,6 +5,7 @@ expected_block_sizes = [(1, 1)]
 
 @test length(blocks) == 1
 @test expected_block_sizes == map(size, blocks)
+λ_basis = map(v -> JordanForm.unwrap.(v), λ_basis)
 @test λ_basis == [[1]] # FIXME: Test for subspace containment rather than exact eigenvectors
 
 # 2x2 matrices
@@ -14,6 +15,8 @@ expected_block_sizes = [(1, 1)]
 
 @test length(blocks) == 1
 @test expected_block_sizes == map(size, blocks)
+λ_basis = map(v -> JordanForm.unwrap.(v), λ_basis)
+println(λ_basis[1])
 @test λ_basis == [[1 // 6 + 41^(1 // 2) * 1im // 6, 1]] # FIXME: Test for subspace containment rather than exact eigenvectors
 
 λ_basis, blocks = JordanForm.generalized_eigenvectors(A1 // 1, alg_mult[2][1], alg_mult[2][2])
@@ -21,4 +24,5 @@ expected_block_sizes = [(1, 1)]
 
 @test length(blocks) == 1
 @test expected_block_sizes == map(size, blocks)
+λ_basis = map(v -> JordanForm.unwrap.(v), λ_basis)
 @test λ_basis == [[1 // 6 - 41^(1 // 2) * 1im // 6, 1]] # FIXME: Test for subspace containment rather than exact eigenvectors

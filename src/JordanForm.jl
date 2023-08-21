@@ -209,4 +209,8 @@ function rref_with_pivots!(A::Matrix{T}) where T
 end
 rref_with_pivots(A::Matrix{T}) where {T} = rref_with_pivots!(copy(A))
 
+# TODO: This is some ugly type piracy, we need to remove as quickly as possible, but
+# it is not exactly easy with the current structure of symbolic roots.
+Base.:(//)(x::Complex, y::Symbolics.Num) = complex(real(x) // y, imag(x) // y)
+
 end

@@ -1,3 +1,5 @@
+export wrap, unwrap
+
 function radical_eigvals(A::AbstractMatrix{T}) where {T <: IntOrRational}
     checksquare(A)
     
