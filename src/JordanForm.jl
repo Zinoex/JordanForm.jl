@@ -65,7 +65,7 @@ function generalized_eigenvectors(M, λ, alg_mul)
     end
     resize!(powers, nilpotent_power)
 
-    nullity = map(p -> n - rank(p), powers)
+    nullity = map(p -> n - rref_rank(p), powers)
     blocks = blocks_from_nullity(nullity)
 
     # Compute λ basis
@@ -112,7 +112,19 @@ function blocks_from_nullity(nullity)
     return blocks
 end
 
-rref_nullspace(A::AbstractMatrix{T}) where {T} = rref_linsolve(A, zeros(T, size(A, 1)))
+rref_rank(A::AbstractMatrix{T}) where {T} = length(rref_with_pivots(A)[2])
+
+function rref_nullspace(A::AbstractMatrix{T}) where {T}
+    if iszero(A)
+        nspace = zeros(T, size(A, 1), 1)
+        nspace[1] = one(T)
+
+        return nspace
+    end
+    
+    return rref_linsolve(A, zeros(T, size(A, 1)))
+end
+
 function rref_linsolve(A::AbstractMatrix{T}, b::AbstractVector{T}) where {T}
     n, m = size(A)
     @assert n == m
@@ -152,7 +164,6 @@ function pick_vec(null_big, null_small)
     end
 end
 
-
 # function scale_eigenvector(v::AbstractVector{<:Rational})
 #     factor = lcm(denominator.(v))
 #     v = v * factor
@@ -167,31 +178,29 @@ function rref_with_pivots!(A::Matrix{T}) where T
     nr, nc = size(A)
     pivots = Vector{Int64}()
     i = j = 1
+
     while i <= nr && j <= nc
-        (m, mi) = findmax(abs.(A[i:nr,j]))
+        (m, mi) = findmax(abs.(unwrap.(A[i:nr,j])))
         mi = mi+i - 1
-        if m <= 0
-            if 0 > 0
-                A[i:nr,j] .= zero(T)
-            end
+        if m == 0
             j += 1
         else
-            for k=j:nc
+            for k in j:nc
                 A[i, k], A[mi, k] = A[mi, k], A[i, k]
             end
-            d = A[i,j]
-            for k = j:nc
-                A[i,k] //= d
+            d = T(A[i, j])
+            for k in j:nc
+                A[i, k] //= d
             end
-            for k = 1:nr
+            for k in 1:nr
                 if k != i
-                    d = A[k,j]
-                    for l = j:nc
-                        A[k,l] -= d*A[i,l]
+                    d = A[k, j]
+                    for l in j:nc
+                        A[k, l] -= d * A[i, l]
                     end
                 end
             end
-            append!(pivots,j)
+            append!(pivots, j)
             i += 1
             j += 1
         end
