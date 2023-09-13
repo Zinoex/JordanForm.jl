@@ -1,6 +1,7 @@
 module JordanForm
 
 using LinearAlgebra: checksquare, I, rank
+using RowEchelon
 # using RowEchelon
 using Graphs
 using Symbolics, SymbolicUtils
@@ -50,6 +51,8 @@ function generalized_eigenvectors(M, λ, alg_mul)
 
     E = M - λ * I
 
+    E = convert.(Complex{Float64}, unwrap.(E))
+
     # Compute block structure
     powers = Vector{typeof(E)}(undef, alg_mul)
     powers[1] = E
@@ -65,7 +68,7 @@ function generalized_eigenvectors(M, λ, alg_mul)
     end
     resize!(powers, nilpotent_power)
 
-    nullity = map(p -> n - rref_rank(p), powers)
+    nullity = map(p -> n - rank(p), powers)
     blocks = blocks_from_nullity(nullity)
 
     # Compute λ basis
@@ -111,8 +114,6 @@ function blocks_from_nullity(nullity)
 
     return blocks
 end
-
-rref_rank(A::AbstractMatrix{T}) where {T} = length(rref_with_pivots(A)[2])
 
 function rref_nullspace(A::AbstractMatrix{T}) where {T}
     if iszero(A)
@@ -163,54 +164,5 @@ function pick_vec(null_big, null_small)
         end
     end
 end
-
-# function scale_eigenvector(v::AbstractVector{<:Rational})
-#     factor = lcm(denominator.(v))
-#     v = v * factor
-
-#     return v
-# end
-# scale_eigenvector(v::AbstractVector) = v
-
-### Attributed to RowEchelon.jl
-### Modified to use rational division.
-function rref_with_pivots!(A::Matrix{T}) where T
-    nr, nc = size(A)
-    pivots = Vector{Int64}()
-    i = j = 1
-
-    while i <= nr && j <= nc
-        (m, mi) = findmax(abs.(unwrap.(A[i:nr,j])))
-        mi = mi+i - 1
-        if m == 0
-            j += 1
-        else
-            for k in j:nc
-                A[i, k], A[mi, k] = A[mi, k], A[i, k]
-            end
-            d = T(A[i, j])
-            for k in j:nc
-                A[i, k] //= d
-            end
-            for k in 1:nr
-                if k != i
-                    d = A[k, j]
-                    for l in j:nc
-                        A[k, l] -= d * A[i, l]
-                    end
-                end
-            end
-            append!(pivots, j)
-            i += 1
-            j += 1
-        end
-    end
-    return A, pivots
-end
-rref_with_pivots(A::Matrix{T}) where {T} = rref_with_pivots!(copy(A))
-
-# TODO: This is some ugly type piracy, we need to remove as quickly as possible, but
-# it is not exactly easy with the current structure of symbolic roots.
-Base.:(//)(x::Complex, y::Symbolics.Num) = complex(real(x) // y, imag(x) // y)
 
 end
