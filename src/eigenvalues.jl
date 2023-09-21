@@ -1,3 +1,5 @@
+export wrap, unwrap
+
 function radical_eigvals(A::AbstractMatrix{T}) where {T <: IntOrRational}
     checksquare(A)
     
@@ -290,7 +292,7 @@ symbolic_cbrt(r) = wrap(r)^1//3
 
 wrap(r) = Symbolics.wrap(Symbolics.Term(identity, [r]))
 function unwrap(r)
-    r = Symbolics.unwrap(r)
     r = simplify(r)
+    r = Symbolics.unwrap(r)
     return r
 end

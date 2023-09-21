@@ -1,3 +1,6 @@
+# 1x1 matrix - trivial
+O1 = [1][:, :]
+
 # 2x2 matrices
 A1 = [6 7; -6 8]
 A2 = [-1 -2; 5 -9]

@@ -1,6 +1,7 @@
 module JordanForm
 
 using LinearAlgebra: checksquare, I, rank
+using RowEchelon
 # using RowEchelon
 using Graphs
 using Symbolics, SymbolicUtils
@@ -39,8 +40,6 @@ function _jordan_form(M::AbstractMatrix{T}) where {T <: IntOrRational}
         append!(jordan_basis, basis)
         append!(jordan_blocks, blocks)
     end
-
-    # return nothing
     
     jordan_basis = reduce(hcat, jordan_basis)
     
@@ -51,6 +50,8 @@ function generalized_eigenvectors(M, λ, alg_mul)
     n = checksquare(M)
 
     E = M - λ * I
+
+    E = convert.(Complex{Float64}, unwrap.(E))
 
     # Compute block structure
     powers = Vector{typeof(E)}(undef, alg_mul)
@@ -114,7 +115,17 @@ function blocks_from_nullity(nullity)
     return blocks
 end
 
-rref_nullspace(A::AbstractMatrix{T}) where {T} = rref_linsolve(A, zeros(T, size(A, 1)))
+function rref_nullspace(A::AbstractMatrix{T}) where {T}
+    if iszero(A)
+        nspace = zeros(T, size(A, 1), 1)
+        nspace[1] = one(T)
+
+        return nspace
+    end
+    
+    return rref_linsolve(A, zeros(T, size(A, 1)))
+end
+
 function rref_linsolve(A::AbstractMatrix{T}, b::AbstractVector{T}) where {T}
     n, m = size(A)
     @assert n == m
@@ -153,53 +164,5 @@ function pick_vec(null_big, null_small)
         end
     end
 end
-
-
-# function scale_eigenvector(v::AbstractVector{<:Rational})
-#     factor = lcm(denominator.(v))
-#     v = v * factor
-
-#     return v
-# end
-# scale_eigenvector(v::AbstractVector) = v
-
-### Attributed to RowEchelon.jl
-### Modified to use rational division.
-function rref_with_pivots!(A::Matrix{T}) where T
-    nr, nc = size(A)
-    pivots = Vector{Int64}()
-    i = j = 1
-    while i <= nr && j <= nc
-        (m, mi) = findmax(abs.(A[i:nr,j]))
-        mi = mi+i - 1
-        if m <= 0
-            if 0 > 0
-                A[i:nr,j] .= zero(T)
-            end
-            j += 1
-        else
-            for k=j:nc
-                A[i, k], A[mi, k] = A[mi, k], A[i, k]
-            end
-            d = A[i,j]
-            for k = j:nc
-                A[i,k] //= d
-            end
-            for k = 1:nr
-                if k != i
-                    d = A[k,j]
-                    for l = j:nc
-                        A[k,l] -= d*A[i,l]
-                    end
-                end
-            end
-            append!(pivots,j)
-            i += 1
-            j += 1
-        end
-    end
-    return A, pivots
-end
-rref_with_pivots(A::Matrix{T}) where {T} = rref_with_pivots!(copy(A))
 
 end
