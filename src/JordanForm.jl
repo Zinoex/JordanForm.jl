@@ -41,7 +41,7 @@ function _jordan_form(M::AbstractMatrix{T}) where {T <: IntOrRational}
         append!(jordan_blocks, blocks)
     end
     
-    jordan_basis = reduce(hcat, jordan_basis)
+    jordan_basis = reduce(hcat, jordan_basis)[:, :]   # The indexing is necesary if M is [1, 1]
     
     return JordanFactorization(jordan_basis, JordanCanonicalForm(jordan_blocks))
 end
@@ -49,9 +49,9 @@ end
 function generalized_eigenvectors(M, λ, alg_mul)
     n = checksquare(M)
 
-    E = M - λ * I
+    λ = convert.(Complex{Float64}, unwrap.(λ))
 
-    E = convert.(Complex{Float64}, unwrap.(E))
+    E = M - λ * I
     T = eltype(E)
 
     # Compute block structure

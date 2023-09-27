@@ -26,7 +26,7 @@ function algebraic_multiplicity(eigs::AbstractVector{T}) where T
     mult_eigs = Tuple{T, Int64}[]
 
     @inbounds for λ in eigs
-        if isempty(mult_eigs) || mult_eigs[end][1] != λ
+        if isempty(mult_eigs) || unwrap(mult_eigs[end][1]) != unwrap(λ)
             push!(mult_eigs, (λ, 1))
         else
             mult_eigs[end] = (λ, mult_eigs[end][2] + 1)
@@ -44,7 +44,7 @@ function berkowitz_vector(A::AbstractMatrix{T}) where {T}
     M = T[1, -A[end, end]]
 
     @inbounds for i in 2:n
-        # Loop from the back as that enables storing a single vector T,
+        # Loop from the back as that enables storing a single vector M,
         # rather than storing a matrix for each iteration before reducing.
         
         # i is the size of the A block to be partitioned into [a R; C Asub]
