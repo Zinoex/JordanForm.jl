@@ -62,10 +62,10 @@ end
 
 # Factorization
 struct JordanFactorization{S, T}
-    basis::AbstractMatrix{S}
-    form::JordanCanonicalForm{T}
+    S::AbstractMatrix{S}
+    J::JordanCanonicalForm{T}
 end
 
-Base.iterate(J::JordanFactorization) = (J.basis, Val(:form))
+Base.iterate(J::JordanFactorization) = (J.S, Val(:form))
 Base.iterate(J::JordanFactorization, ::Val{:form}) = (J.form, Val(:done))
 Base.iterate(J::JordanFactorization, ::Val{:done}) = nothing
