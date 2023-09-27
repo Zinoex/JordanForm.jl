@@ -68,7 +68,7 @@ struct JordanFactorization{S, T}
     J::JordanCanonicalForm{T}
 end
 
-Base.iterate(J::JordanFactorization) = (J.S, Val(:form))
-Base.iterate(J::JordanFactorization, ::Val{:form}) = (J.form, Val(:done))
-Base.iterate(J::JordanFactorization, ::Val{:done}) = nothing
-nblocks(J::JordanFactorization) = nblocks(J.form)
+Base.iterate(F::JordanFactorization) = (F.S, Val(:form))
+Base.iterate(F::JordanFactorization, ::Val{:form}) = (F.J, Val(:done))
+Base.iterate(F::JordanFactorization, ::Val{:done}) = nothing
+nblocks(F::JordanFactorization) = nblocks(F.J)

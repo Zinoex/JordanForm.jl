@@ -18,8 +18,8 @@ function jordan_form(M::AbstractMatrix{T}) where {T <: IntOrRational}
     F = _jordan_form(M)
 
     # TODO: Convert back into most specific format
-    basis = trytoint.(F.basis)
-    F = JordanFactorization(basis, F.form)
+    basis = trytoint.(F.S)
+    F = JordanFactorization(basis, F.J)
 
     return F
 end
