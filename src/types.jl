@@ -1,4 +1,5 @@
 export JordanBlock, JordanCanonicalForm, JordanFactorization
+export eigenvalue, diaglength
 
 # Block
 struct JordanBlock{T} <: AbstractMatrix{T}
@@ -7,8 +8,11 @@ struct JordanBlock{T} <: AbstractMatrix{T}
 end
 Base.eltype(::JordanBlock{T}) where {T} = T
 
-Base.size(J::JordanBlock) = (J.size, J.size)
-Base.size(J::JordanBlock, d::Integer) = J.size
+eigenvalue(J::JordanBlock) = J.λ
+diaglength(J::JordanBlock) = J.size
+
+Base.size(J::JordanBlock) = (diaglength(J), diaglength(J))
+Base.size(J::JordanBlock, d::Integer) = diaglength(J)
 
 function Base.getindex(J::JordanBlock{T}, i::Integer, j::Integer) where {T}
     if i == j
