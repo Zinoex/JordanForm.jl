@@ -1,6 +1,6 @@
 module JordanForm
 
-using LinearAlgebra: checksquare, I, rank
+using LinearAlgebra: checksquare, I, rank, UniformScaling
 using RowEchelon
 # using RowEchelon
 using Graphs
@@ -52,6 +52,7 @@ function generalized_eigenvectors(M, λ, alg_mul)
     E = M - λ * I
 
     E = convert.(Complex{Float64}, unwrap.(E))
+    T = eltype(E)
 
     # Compute block structure
     powers = Vector{typeof(E)}(undef, alg_mul)
@@ -72,10 +73,15 @@ function generalized_eigenvectors(M, λ, alg_mul)
     blocks = blocks_from_nullity(nullity)
 
     # Compute λ basis
-    λ_basis = []
+    λ_basis = Vector{T}[]
     for size in blocks
         if size == 1
-            v = rref_nullspace(powers[size])[:, 1]
+            null = rref_nullspace(powers[size])
+            if isempty(λ_basis)
+                v = null[:, 1]
+            else
+                v = pick_vec(null, reduce(hcat, λ_basis))
+            end
             push!(λ_basis, v)
         else 
             null_big = rref_nullspace(powers[size])
@@ -85,7 +91,7 @@ function generalized_eigenvectors(M, λ, alg_mul)
             end
     
             v = pick_vec(null_big, null_small)
-            vs = Vector{AbstractVector{eltype(v)}}(undef, size)
+            vs = Vector{Vector{T}}(undef, size)
             vs[1] = v
 
             for i in 2:size
@@ -117,10 +123,8 @@ end
 
 function rref_nullspace(A::AbstractMatrix{T}) where {T}
     if iszero(A)
-        nspace = zeros(T, size(A, 1), 1)
-        nspace[1] = one(T)
-
-        return nspace
+        I = UniformScaling{T}(1)
+        return I(size(A, 2))
     end
     
     return rref_linsolve(A, zeros(T, size(A, 1)))
