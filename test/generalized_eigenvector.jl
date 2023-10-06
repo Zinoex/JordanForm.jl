@@ -184,6 +184,12 @@ expected_block_sizes = [(1, 1)]
 
 @test insubspace(λ_basis[1], [[0, 0, 0, 1]])
 
+# C2
+λ_basis, jordan_blocks = JordanForm.generalized_eigenvectors(C2, 2, 4)
+expected_block_sizes = [(2, 2), (2, 2)]
+@test length(jordan_blocks) == length(expected_block_sizes)
+@test expected_block_sizes == map(size, jordan_blocks)
+
 # 5x5 matrices
 # D1
 alg_mult = [(-1, 2), (1, 3)]
