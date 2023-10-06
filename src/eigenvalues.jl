@@ -101,10 +101,11 @@ function _charpoly_roots(p::AbstractVector{T}) where {T <: IntOrRational}
         return vcat(eigs, linearorquadraticroots(p))
     end
 
+    # TODO: implement binomial
     # Only the leading and constant coefficients are non-zero. Take the nth root.
-    if isbinomial(p)
-        return vcat(eigs, binomialroots(p))
-    end
+    # if isbinomial(p)
+    #     return vcat(eigs, binomialroots(p))
+    # end
 
     # Check if any of -5:5 are roots
     @inbounds for r in -5:5
@@ -173,24 +174,25 @@ function linearorquadraticroots(p)
     end
 end
 
-isbinomial(p) = iszero(p[2:end - 1])
-function binomialroots(p)
-    @assert isbinomial(p)
+# isbinomial(p) = iszero(p[2:end - 1])
+# TODO: implement binomial
+# function binomialroots(p)
+#     @assert isbinomial(p)
 
-    # TODO: Implement
-    a, b = p[1], p[end]
-    @assert isone(a)
+#     # TODO: Implement
+#     a, b = p[1], p[end]
+#     @assert isone(a)
 
-    throw(NotImplementedError("Binomial polynomial roots is not implemented yet."))
+#     throw("Binomial polynomial roots is not implemented yet.")
 
-    d = l - 1
+#     d = l - 1
 
-    base = -b
-    α = base^(1 // d)
+#     base = -b
+#     α = base^(1 // d)
 
-    roots = [α * exp(k * 2π * im / d) for k in 0:(n - 1)]
-    return roots
-end
+#     roots = [α * exp(k * 2π * im / d) for k in 0:(n - 1)]
+#     return roots
+# end
 
 function evalpoly(p, r)
     coeff = reverse(p)
