@@ -87,7 +87,7 @@ function generalized_eigenvectors(M, λ, alg_mul)
             null_big = rref_nullspace(powers[size])
             null_small = rref_nullspace(powers[size - 1])
             if !isempty(λ_basis)
-                null_small = reduce(hcat, [null_small; λ_basis])
+                null_small = [null_small reduce(hcat, λ_basis)]
             end
     
             v = pick_vec(null_big, null_small)
@@ -160,7 +160,7 @@ end
 
 function pick_vec(null_big, null_small)
     @assert size(null_small, 2) >= 1
-    n = size(null_small, 2) + 1
+    n = rank(null_small) + 1
 
     for v in eachcol(null_big)
         if rank(hcat(null_small, v)) == n
