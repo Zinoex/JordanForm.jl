@@ -86,7 +86,6 @@ function charpoly_roots(p)
     ]
     return eigs
 end
-tryiszero(x::Union{Float64, IntOrRational}) = iszero(x)
 
 function _charpoly_roots(p::AbstractVector{T}) where {T <: IntOrRational}
     @assert length(p) >= 2 && isone(p[1])
