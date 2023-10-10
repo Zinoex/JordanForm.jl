@@ -55,14 +55,14 @@ expected_mult = [(e, 1) for e in expected]
 @test expected == λ
 @test JordanForm.algebraic_multiplicity(λ) == expected_mult
 
-# # 4x4 matrices
+# 4x4 matrices
 λ = JordanForm.radical_eigvals(C1)
 expected = [1, 2, 3, 4]
 expected_mult = [(e, 1) for e in expected]
 @test expected == λ
 @test JordanForm.algebraic_multiplicity(λ) == expected_mult
 
-# # 5x5 matrices
+# 5x5 matrices
 λ = JordanForm.radical_eigvals(D1)
 λ = simplify.(λ)
 expected = [-1, -1, 1, 1, 1]
