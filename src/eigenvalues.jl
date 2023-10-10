@@ -257,7 +257,7 @@ function quarticroots(p)
     # Ferrari's method
     q = [1, -c, b * d - 4e, 4c * e - b^2 * e - d^2]
     croots = cubicroots(q)
-    y = findfirst(isreal, croots)
+    y = croots[findfirst(isreal, croots)]
 
     p = [
         b + symbolic_sqrt(b^2 - 4c + 4y),
@@ -278,11 +278,11 @@ function quarticroots(p)
 end
 
 function symbolic_sqrt(r)
-    if r == 0
+    if unwrap(r) == 0
         return 0
     end
 
-    if r < 0
+    if unwrap(r) < 0
         return wrap(-r)^(1//2) * 1im
     else
         return wrap(r)^(1//2)
