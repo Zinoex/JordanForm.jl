@@ -86,7 +86,6 @@ function charpoly_roots(p)
     ]
     return eigs
 end
-tryiszero(x::Union{Float64, IntOrRational}) = iszero(x)
 
 function _charpoly_roots(p::AbstractVector{T}) where {T <: IntOrRational}
     @assert length(p) >= 2 && isone(p[1])
@@ -102,10 +101,11 @@ function _charpoly_roots(p::AbstractVector{T}) where {T <: IntOrRational}
         return vcat(eigs, linearorquadraticroots(p))
     end
 
+    # TODO: implement binomial
     # Only the leading and constant coefficients are non-zero. Take the nth root.
-    if isbinomial(p)
-        return vcat(eigs, binomialroots(p))
-    end
+    # if isbinomial(p)
+    #     return vcat(eigs, binomialroots(p))
+    # end
 
     # Check if any of -5:5 are roots
     @inbounds for r in -5:5
@@ -174,24 +174,25 @@ function linearorquadraticroots(p)
     end
 end
 
-isbinomial(p) = iszero(p[2:end - 1])
-function binomialroots(p)
-    @assert isbinomial(p)
+# isbinomial(p) = iszero(p[2:end - 1])
+# TODO: implement binomial
+# function binomialroots(p)
+#     @assert isbinomial(p)
 
-    # TODO: Implement
-    a, b = p[1], p[end]
-    @assert isone(a)
+#     # TODO: Implement
+#     a, b = p[1], p[end]
+#     @assert isone(a)
 
-    throw(NotImplementedError("Binomial polynomial roots is not implemented yet."))
+#     throw("Binomial polynomial roots is not implemented yet.")
 
-    d = l - 1
+#     d = l - 1
 
-    base = -b
-    α = base^(1 // d)
+#     base = -b
+#     α = base^(1 // d)
 
-    roots = [α * exp(k * 2π * im / d) for k in 0:(n - 1)]
-    return roots
-end
+#     roots = [α * exp(k * 2π * im / d) for k in 0:(n - 1)]
+#     return roots
+# end
 
 function evalpoly(p, r)
     coeff = reverse(p)
@@ -256,7 +257,7 @@ function quarticroots(p)
     # Ferrari's method
     q = [1, -c, b * d - 4e, 4c * e - b^2 * e - d^2]
     croots = cubicroots(q)
-    y = findfirst(isreal, croots)
+    y = croots[findfirst(isreal, croots)]
 
     p = [
         b + symbolic_sqrt(b^2 - 4c + 4y),
@@ -277,11 +278,11 @@ function quarticroots(p)
 end
 
 function symbolic_sqrt(r)
-    if r == 0
+    if unwrap(r) == 0
         return 0
     end
 
-    if r < 0
+    if unwrap(r) < 0
         return wrap(-r)^(1//2) * 1im
     else
         return wrap(r)^(1//2)
