@@ -2,7 +2,7 @@ export wrap, unwrap
 
 function radical_eigvals(A::AbstractMatrix{T}) where {T <: IntOrRational}
     checksquare(A)
-    
+
     g = DiGraph{UInt16}(A)
     blocks = strongly_connected_components(g)
 
@@ -17,12 +17,12 @@ function radical_eigvals(A::AbstractMatrix{T}) where {T <: IntOrRational}
         return eigs
     end
 
-    sort!(eigs, by=λ -> (real(unwrap(λ)), imag(unwrap(λ))))
+    sort!(eigs; by = λ -> (real(unwrap(λ)), imag(unwrap(λ))))
 
     return eigs
 end
 
-function algebraic_multiplicity(eigs::AbstractVector{T}) where T
+function algebraic_multiplicity(eigs::AbstractVector{T}) where {T}
     mult_eigs = Tuple{T, Int64}[]
 
     @inbounds for λ in eigs
@@ -32,7 +32,7 @@ function algebraic_multiplicity(eigs::AbstractVector{T}) where T
             mult_eigs[end] = (λ, mult_eigs[end][2] + 1)
         end
     end
-    
+
     return mult_eigs
 end
 
@@ -46,12 +46,12 @@ function berkowitz_vector(A::AbstractMatrix{T}) where {T}
     @inbounds for i in 2:n
         # Loop from the back as that enables storing a single vector M,
         # rather than storing a matrix for each iteration before reducing.
-        
+
         # i is the size of the A block to be partitioned into [a R; C Asub]
 
-        Asub = @view(A[end - i + 2:end, end - i + 2:end])
-        C = @view(A[end - i + 2:end, end - i + 1])      # Note: C is stored sequentially (it is a column)
-        R = @view(A[end - i + 1, end - i + 2:end])      # Note R is not stored sequentially
+        Asub = @view(A[(end - i + 2):end, (end - i + 2):end])
+        C = @view(A[(end - i + 2):end, end - i + 1])      # Note: C is stored sequentially (it is a column)
+        R = @view(A[end - i + 1, (end - i + 2):end])      # Note R is not stored sequentially
         a = A[end - i + 1, end - i + 1]
 
         N = Vector{T}(undef, i + 1)
@@ -80,10 +80,7 @@ function charpoly_roots(p)
     eigs = _charpoly_roots(p)
     eigs = Symbolics.unwrap(eigs)
     rs, is = Symbolics.unwrap.(real.(eigs)), Symbolics.unwrap.(imag.(eigs))
-    eigs = [
-        iszero(simplify(i)) ? r : r + i * 1im
-        for (r, i) in zip(rs, is)
-    ]
+    eigs = [iszero(simplify(i)) ? r : r + i * 1im for (r, i) in zip(rs, is)]
     return eigs
 end
 
@@ -95,8 +92,8 @@ function _charpoly_roots(p::AbstractVector{T}) where {T <: IntOrRational}
     n = findfirst(i -> !iszero(p[i]), reverse(eachindex(p))) - 1
     eigs = zeros(T, n)
 
-    p = p[1:end - n]
-    
+    p = p[1:(end - n)]
+
     if islinearorquadratic(p)
         return vcat(eigs, linearorquadraticroots(p))
     end
@@ -251,7 +248,12 @@ function quarticroots(p)
     # Biquadratic equations
     if iszero(b) && iszero(d)
         r1, r2 = quadraticroots([1, c, e])
-        return [symbolic_sqrt(r1), -symbolic_sqrt(r1), symbolic_sqrt(r2), -symbolic_sqrt(r2)]
+        return [
+            symbolic_sqrt(r1),
+            -symbolic_sqrt(r1),
+            symbolic_sqrt(r2),
+            -symbolic_sqrt(r2),
+        ]
     end
 
     # Ferrari's method
@@ -259,15 +261,9 @@ function quarticroots(p)
     croots = cubicroots(q)
     y = croots[findfirst(isreal, croots)]
 
-    p = [
-        b + symbolic_sqrt(b^2 - 4c + 4y),
-        b - symbolic_sqrt(b^2 - 4c + 4y)
-    ]
+    p = [b + symbolic_sqrt(b^2 - 4c + 4y), b - symbolic_sqrt(b^2 - 4c + 4y)]
 
-    q = [
-        y - symbolic_sqrt(y^2 - 4e),
-        y + symbolic_sqrt(y^2 - 4e)
-    ]
+    q = [y - symbolic_sqrt(y^2 - 4e), y + symbolic_sqrt(y^2 - 4e)]
 
     r1 = (-p[1] + symbolic_sqrt(p[1]^2 - 8q[1])) // 4
     r2 = (-p[1] - symbolic_sqrt(p[1]^2 - 8q[1])) // 4
@@ -283,13 +279,12 @@ function symbolic_sqrt(r)
     end
 
     if unwrap(r) < 0
-        return wrap(-r)^(1//2) * 1im
+        return wrap(-r)^(1 // 2) * 1im
     else
-        return wrap(r)^(1//2)
+        return wrap(r)^(1 // 2)
     end
 end
-symbolic_cbrt(r) = wrap(r)^1//3
-
+symbolic_cbrt(r) = wrap(r)^1 // 3
 
 wrap(r) = Symbolics.wrap(Symbolics.Term(identity, [r]))
 function unwrap(r)

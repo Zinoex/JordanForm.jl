@@ -28,7 +28,8 @@ end
 struct JordanCanonicalForm{T} <: AbstractMatrix{T}
     jordan_blocks::Vector{JordanBlock{T}}
 end
-JordanCanonicalForm(jordan_blocks::Vector{<:JordanBlock}) = JordanCanonicalForm{eltype(first(jordan_blocks))}(jordan_blocks)
+JordanCanonicalForm(jordan_blocks::Vector{<:JordanBlock}) =
+    JordanCanonicalForm{eltype(first(jordan_blocks))}(jordan_blocks)
 
 Base.eltype(::JordanCanonicalForm{T}) where {T} = T
 blocks(J::JordanCanonicalForm) = J.jordan_blocks
@@ -45,7 +46,7 @@ end
 
 function Base.getindex(J::JordanCanonicalForm{T}, i::Integer, j::Integer) where {T}
     # FIXME: Compute correct indexing.
-    
+
     k = 1
     @inbounds for block in blocks(J)
         if k <= i < k + size(block, 1)
