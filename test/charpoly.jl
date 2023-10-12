@@ -61,3 +61,8 @@ try
 catch e
     @test e == "Unable to find symbolic roots of polynomial"
 end
+
+p = [1, 0, 0, 0, -1296]
+res = JordanForm.unwrap.(JordanForm.simplify.(JordanForm._charpoly_roots(p)))
+exp = [1296^(1 / 4), -(1296^(1 / 4)), 0 + (1296^(1 / 4)) * 1im, 0 - (1296^(1 / 4)) * 1im]
+@test isequal(res, exp)
