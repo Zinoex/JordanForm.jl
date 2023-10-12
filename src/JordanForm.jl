@@ -14,7 +14,7 @@ include("eigenvalues.jl")
 
 export jordan_form
 
-function jordan_form(M::AbstractMatrix{T}) where {T <: IntOrRational} 
+function jordan_form(M::AbstractMatrix{T}) where {T <: IntOrRational}
     F = _jordan_form(M)
 
     # TODO: Convert back into most specific format
@@ -26,7 +26,7 @@ end
 trytoint(x::Rational) = isinteger(x) ? Int64(x) : x
 trytoint(x) = x
 
-function _jordan_form(M::AbstractMatrix{T}) where {T <: IntOrRational}     
+function _jordan_form(M::AbstractMatrix{T}) where {T <: IntOrRational}
     eigs = radical_eigvals(M)
     eigs = algebraic_multiplicity(eigs)
 
@@ -34,15 +34,15 @@ function _jordan_form(M::AbstractMatrix{T}) where {T <: IntOrRational}
 
     jordan_basis = []
     jordan_blocks = JordanBlock[]
-    
+
     for (λ, alg_mul) in eigs
         basis, blocks = generalized_eigenvectors(M, λ, alg_mul)
         append!(jordan_basis, basis)
         append!(jordan_blocks, blocks)
     end
-    
+
     jordan_basis = reduce(hcat, jordan_basis)[:, :]   # The indexing is necesary if M is [1, 1]
-    
+
     return JordanFactorization(jordan_basis, JordanCanonicalForm(jordan_blocks))
 end
 
@@ -83,13 +83,13 @@ function generalized_eigenvectors(M, λ, alg_mul)
                 v = pick_vec(null, reduce(hcat, λ_basis))
             end
             push!(λ_basis, v)
-        else 
+        else
             null_big = rref_nullspace(powers[size])
             null_small = rref_nullspace(powers[size - 1])
             if !isempty(λ_basis)
                 null_small = [null_small reduce(hcat, λ_basis)]
             end
-    
+
             v = pick_vec(null_big, null_small)
             vs = Vector{Vector{T}}(undef, size)
             vs[1] = v
@@ -106,13 +106,13 @@ function generalized_eigenvectors(M, λ, alg_mul)
 
     blocks = JordanBlock.(λ, blocks)
 
-    λ_basis, blocks
+    return λ_basis, blocks
 end
 
 function blocks_from_nullity(nullity)
     nullity = [0; nullity; nullity[end]]
 
-    prev, cur, next = nullity[1:end - 2], nullity[2:end - 1], nullity[3:end]
+    prev, cur, next = nullity[1:(end - 2)], nullity[2:(end - 1)], nullity[3:end]
     block_sizes = @. 2cur - prev - next
 
     blocks = [i for (i, size_num) in enumerate(block_sizes) for _ in 1:size_num]
@@ -126,7 +126,7 @@ function rref_nullspace(A::AbstractMatrix{T}) where {T}
         I = UniformScaling{T}(1)
         return I(size(A, 2))
     end
-    
+
     return rref_linsolve(A, zeros(T, size(A, 1)))
 end
 

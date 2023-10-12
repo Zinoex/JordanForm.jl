@@ -15,9 +15,10 @@ function islinearlyindependent(vectors::AbstractMatrix)
 end
 
 include("matrix_data.jl")
-    
-test_files = ["charpoly.jl", "eigenvalue.jl", "generalized_eigenvector.jl", "jordan_form.jl"]
-for f = test_files
+
+test_files =
+    ["charpoly.jl", "eigenvalue.jl", "generalized_eigenvector.jl", "jordan_form.jl"]
+for f in test_files
     @testset "$f" begin
         include(f)
     end

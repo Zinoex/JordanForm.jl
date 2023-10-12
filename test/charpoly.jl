@@ -46,11 +46,14 @@ expected = [1, -1, -2, 2, 1, -1]
 # Particular polynomials
 p = [1, -3, 3, -1]
 @test JordanForm.iscubic(p)
-@test isequal(JordanForm.simplify.(JordanForm.cubicroots(p)), [1//1, 1//1, 1//1])
+@test isequal(JordanForm.simplify.(JordanForm.cubicroots(p)), [1 // 1, 1 // 1, 1 // 1])
 
 p = [1, -4, 6, -4, 1]
 @test JordanForm.isquartic(p)
-@test isequal(JordanForm.simplify.(JordanForm.quarticroots(p)), [1//1, 1//1, 1//1, 1//1])
+@test isequal(
+    JordanForm.simplify.(JordanForm.quarticroots(p)),
+    [1 // 1, 1 // 1, 1 // 1, 1 // 1],
+)
 
 p = [1, 2, 3, 4, 5, 6, 7]
 try

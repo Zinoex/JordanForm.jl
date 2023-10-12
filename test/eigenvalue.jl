@@ -8,7 +8,7 @@ expected_mult = [(1, 1)]
 @test JordanForm.algebraic_multiplicity(λ) == expected_mult
 
 # 2x2 matrices
-λ = JordanForm.radical_eigvals(A1) 
+λ = JordanForm.radical_eigvals(A1)
 λ = simplify.(λ)
 
 expected = [7 - 41^(1 // 2) * 1im, 7 + 41^(1 // 2) * 1im]
@@ -18,7 +18,7 @@ expected_mult = [(e, 1) for e in expected]
 
 λ = JordanForm.radical_eigvals(A2)
 λ = simplify.(λ)
-expected = [-5 - 6^(1//2), -5 + 6^(1//2)]
+expected = [-5 - 6^(1 // 2), -5 + 6^(1 // 2)]
 expected_mult = [(e, 1) for e in expected]
 @test expected == λ
 @test JordanForm.algebraic_multiplicity(λ) == expected_mult
@@ -38,7 +38,7 @@ expected_mult = [(1, 2)]
 λ = JordanForm.radical_eigvals(A5)
 λ = simplify.(λ)
 expected = [-1, 1]
-expected_mult = [(-1, 1), (1, 1)] 
+expected_mult = [(-1, 1), (1, 1)]
 @test expected == λ
 @test JordanForm.algebraic_multiplicity(λ) == expected_mult
 

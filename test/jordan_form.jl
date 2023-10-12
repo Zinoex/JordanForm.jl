@@ -30,7 +30,10 @@ expected_block_sizes = [(1, 1), (1, 1)]
 @test nblocks(F) == length(expected_block_sizes)
 @test expected_block_sizes == map(size, blocks(J))
 
-expected_blocks = [(7 - JordanForm.symbolic_sqrt(41) * 1im, 1), (7 + JordanForm.symbolic_sqrt(41) * 1im, 1)]
+expected_blocks = [
+    (7 - JordanForm.symbolic_sqrt(41) * 1im, 1),
+    (7 + JordanForm.symbolic_sqrt(41) * 1im, 1),
+]
 @test expected_blocks == map(b -> (eigenvalue(b), (diaglength(b))), blocks(J))
 
 @test islinearlyindependent(S)
@@ -48,7 +51,7 @@ expected_block_sizes = [(1, 1), (1, 1)]
 @test nblocks(F) == length(expected_block_sizes)
 @test expected_block_sizes == map(size, blocks(J))
 
-expected_blocks = [(-5 - 6^(1/2), 1), (-5 + 6^(1//2), 1)]
+expected_blocks = [(-5 - 6^(1 / 2), 1), (-5 + 6^(1 // 2), 1)]
 @test expected_blocks == map(b -> (eigenvalue(b), (diaglength(b))), blocks(J))
 
 @test islinearlyindependent(S)
